@@ -30,6 +30,20 @@ Simulation of a CMOS inverter across supply voltage and temperature corners, mea
 - **Why:** A lower supply voltage reduces gate overdrive, so the transistors deliver less drive current into the load capacitance. A higher temperature lowers carrier mobility, which cuts the current further, so delay is largest at low VDD and high temperature.
 - **Observation:** tpLH is about 9-10% larger than tpHL at every corner, so the pull-up is slightly weaker than the pull-down with the current 2.5:1 PMOS/NMOS width ratio.
 
+- ## Debugging: rise/fall delay imbalance
+**Symptom:** In the baseline, tpLH was 6-11% larger than tpHL at every corner (at 1.8 V, 25 C: 86.4 ps vs 79.3 ps).
+**Hypothesis:** The PMOS is under-sized. Its mobility parameter is about 2.8x lower than the NMOS, but the width ratio was only 2.5.
+**Fix:** Increased PMOS width from 2.5 um to 2.8 um (`inverter_pvt_fixed.cir`).
+
+| Metric (1.8 V, 25 C) | Before (Wp = 2.5 um) | After (Wp = 2.8 um) |
+|---|---|---|
+| tpHL (ps) | 79.3 | 79.3 |
+| tpLH (ps) | 86.4 | 80.0 |
+| tpLH vs tpHL | +9.0% | +0.8% |
+| tpd (ps) | 82.9 | 79.6 |
+
+**Result:** The imbalance at nominal dropped from 9.0% to 0.8%, and across all 9 corners from 6-11% to within about ±3%. The balance shifts with temperature: at 125 C tpLH ends up 2-3% below tpHL, so one width cannot balance every corner. I did not investigate the cause.
+
 ## Run it yourself
 Open `inverter_pvt.cir` in LTspice and run the simulation. Press Ctrl+L to see the .meas results.
 
