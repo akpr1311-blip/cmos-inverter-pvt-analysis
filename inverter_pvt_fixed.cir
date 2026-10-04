@@ -1,0 +1,19 @@
+* CMOS inverter - PVT corner analysis (generic Level-1 models)
+.param VSUP=1.8
+V1 vdd 0 {VSUP}
+Vin in 0 PULSE(0 {VSUP} 1n 100p 100p 5n 10n)
+Mp out in vdd vdd PMOD W=2.8u L=0.18u
+Mn out in 0 0 NMOD W=1u L=0.18u
+Cl out 0 50f
+
+.model NMOD NMOS (LEVEL=1 VTO=0.5 KP=170u LAMBDA=0.05)
+.model PMOD PMOS (LEVEL=1 VTO=-0.5 KP=60u LAMBDA=0.05)
+
+.step param VSUP list 1.62 1.8 1.98
+.step temp list -40 25 125
+.tran 0 30n 0 10p
+
+.meas tran tpHL trig v(in) val={VSUP/2} rise=1 targ v(out) val={VSUP/2} fall=1
+.meas tran tpLH trig v(in) val={VSUP/2} fall=1 targ v(out) val={VSUP/2} rise=1
+.meas tpd param (tpHL+tpLH)/2
+.end
